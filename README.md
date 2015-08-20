@@ -5,12 +5,14 @@ This is an R-shiny interface for the statnet suite of R packages. It currently i
 
 Run the app in two ways:  
 * Through the shinyapps server with this link: https://statnet.shinyapps.io/statnetWeb  
-* On your own machine using the statnetWeb R package:  
-    `install.packages("devtools")`  
-    `devtools::install_github("statnet/statnetWeb")`  
-    `library(statnetWeb)`  
-    `run_sw()`
+* On your own machine using the statnetWeb R package:
+```r
+install.packages("statnetWeb")
+statnetWeb::run_sw()
+```
 
+statnetWeb wiki:  
+https://statnet.csde.washington.edu/trac/wiki/statnetWeb
 
 statnet wiki:  
 https://statnet.csde.washington.edu/trac 

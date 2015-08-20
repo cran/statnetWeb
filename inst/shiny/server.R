@@ -1,9 +1,10 @@
 
 library(statnetWeb)
 library(RColorBrewer)
+library(ndtv)
 
 data(faux.mesa.high)
-data(faux.magnolia.high)
+#data(faux.magnolia.high)
 data(florentine)
 data(sampson)
 data(samplk)
@@ -18,6 +19,8 @@ histblue <- "#83B6E1"
 tgray3 <- adjustcolor("gray", alpha.f = 0.3)
 tgray7 <- adjustcolor("gray", alpha.f = 0.7)
 
+allterms <- splitargs(searchterm = "")
+
 shinyServer(
   function(input, output, session){
 
@@ -25,7 +28,7 @@ shinyServer(
     on.exit(options(oldoptions))
     options(digits=3)
 
-    
+
 # Reactive Expressions ----------------------------------------------------
 # These expressions contain most of the code from the ergm package that we will
 # be using. Objects created with a reactive expression can be accessed from any
@@ -34,7 +37,7 @@ shinyServer(
 # the same ergm objects, using reactive expressions will help the app run much
 # faster.
 
-    
+
 values <- reactiveValues()
 
 # when two options are available to the user, or when we need to know if one
@@ -101,28 +104,28 @@ nwinit <- reactive({
     fileext <- substr(filename,nchar(filename)-3,nchar(filename))
 
     if(input$filetype == 1){
-      if(fileext %in% c(".rds", ".Rds", ".RDs", ".RDS")){
-        nw_var <- readRDS(paste(filepath))
-      } else {
-        return("Upload a .rds file")
-      }
-
+      validate(
+        need(fileext %in% c(".rds", ".Rds", ".RDs", ".RDS"),
+             "Upload an .rds file"))
+      nw_var <- readRDS(paste(filepath))
     } else if(input$filetype == 2){
-      nw_var <- "Upload a .net file"
-      if(fileext %in% c(".net", ".NET")){
-        nw_var <- read.paj(paste(filepath))
-      }
+      validate(
+        need(fileext %in% c(".net", ".NET"),
+             "Upload a .net file"))
+      nw_var <- read.paj(paste(filepath))
     } else if(input$filetype == 3){
-      nw_var <- "Upload a .paj file"
-      if(fileext %in% c(".paj",".PAJ")){
-        nws <- read.paj(paste(filepath))
-        if(!is.null(pajnws())){
-          nw_var <- nws$networks[[as.numeric(input$choosepajnw)]]
-        }
+      validate(
+        need(fileext %in% c(".paj",".PAJ"),
+             "Upload a .paj file"))
+      nws <- read.paj(paste(filepath))
+      if(!is.null(pajnws())){
+        nw_var <- nws$networks[[as.numeric(input$choosepajnw)]]
       }
-
     } else if(input$filetype == 4){
-      nw_var <- "Input the specified type of matrix"
+      validate(
+        need(fileext %in% c(".csv",".CSV") |
+               fileext %in% c(".rds", ".Rds", ".RDs", ".RDS"),
+             "Upload the specified type of matrix"))
       if(fileext %in% c(".csv",".CSV")){
         header <- TRUE
         row_names<-1
@@ -150,7 +153,7 @@ nwinit <- reactive({
     }
   }
   if(input$filetype == 5){
-    if(input$samplenet == "Choose a network"){
+    if(input$samplenet == ""){
       nw_var <- NULL
     } else {
       nw_var <- eval(parse(text = input$samplenet))
@@ -159,7 +162,6 @@ nwinit <- reactive({
       }
     }
   }
-
   return(nw_var)
 })
 
@@ -207,7 +209,7 @@ vattrinit <- reactive({
 #matrix of vertex attribute values
 vattrinit.vals <- reactive({
   v <- list()
-  for (j in 1:length(vattrinit())) {
+  for (j in seq(length(list.vertex.attributes(nwinit())))) {
     v[[j]] <- get.vertex.attribute(nwinit(), vattrinit()[j])
   }
   v
@@ -402,6 +404,11 @@ nwmid <- reactive({
         }
       }
 
+      if (is.bipartite(nw_var)){
+        set.vertex.attribute(nw_var, "mode", c(rep(1, nw_var$gal$bipartite),
+                                               rep(2, nw_var$gal$n - nw_var$gal$bipartite)))
+      }
+
       v_attrNamesToAdd <- values$v_attrNamesToAdd
       v_attrValsToAdd <- values$v_attrValsToAdd
       e_attrNamesToAdd <- values$e_attrNamesToAdd
@@ -458,7 +465,10 @@ nw <- reactive({
 
 
 #get coordinates to plot network with
-coords <- reactive({plot.network(nw())})
+coords <- reactive({
+  input$refreshplot
+  plot.network(nw())
+  })
 
 #initial network attributes
 #returns vector of true/falses
@@ -536,7 +546,7 @@ nodesize <- reactive({
 vcol <- reactive({
   if(!is.network(nw())){return()}
   nw_var <- nw()
-  if(input$colorby ==2){
+  if(input$colorby == 2){
     vcol <- 2
   } else {
     full_list <- get.vertex.attribute(nw_var,input$colorby)
@@ -1195,15 +1205,16 @@ output$rawdatafile <- renderPrint({
   write.table(raw, quote=FALSE, col.names=FALSE)})
 
 output$pajchooser <- renderUI({
-  pajlist <- 'None'
+  pajlist <- c(None = '')
   if(!is.null(pajnws())){
     pajlist <- 1:length(pajnws()$networks)
   names(pajlist) <- names(pajnws()$networks)
   }
   selectInput('choosepajnw',
-              label = 'Upload a Pajek project file and choose a network from it',
+              label = 'Choose a network from the Pajek project',
               choices = pajlist)
 })
+outputOptions(output, "pajchooser", suspendWhenHidden = FALSE)
 
 
 output$newattrname <- renderPrint({
@@ -1293,17 +1304,26 @@ output$nwplot <- renderPlot({
 
   nw_var <- nw()
   color <- adjustcolor(vcol(), alpha.f = input$transp)
+  if(is.bipartite(nw())){
+    sides <- c(rep(50, nw()$gal$bipartite),
+               rep(3, nodes() - nw()$gal$bipartite))
+  } else{
+    sides <- 50
+  }
+
   par(mar = c(0, 0, 0, 0))
   plot.network(nw_var, coord = coords(),
                displayisolates = input$iso,
                displaylabels = input$vnames,
                vertex.col = color,
+               vertex.sides = sides,
                vertex.cex = nodesize())
   if(input$colorby != 2){
     legend('bottomright', title = input$colorby, legend = legendlabels(), fill = legendfill(),
            bty='n')
   }
 })
+
 
 output$nwplotdownload <- downloadHandler(
   filename = function(){paste(nwname(),'_plot.pdf',sep='')},
@@ -1317,11 +1337,34 @@ output$nwplotdownload <- downloadHandler(
                  vertex.col = color,
                  vertex.cex = nodesize())
     if(input$colorby != 2){
-      legend('bottomright', title=input$colorby, legend = legendlabels(), fill = legendfill())
+      legend('bottomright', title=input$colorby, legend = legendlabels(),
+             fill = legendfill())
     }
     dev.off()
   }
   )
+
+output$attrtbl <- renderDataTable({
+  attrs <- menuattr()
+  if(is.na(as.numeric(network.vertex.names(nw()))[1])){
+    df <- data.frame(Names = network.vertex.names(nw()))
+  } else {
+    df <- data.frame(Names = as.numeric(network.vertex.names(nw())))
+  }
+  for(i in seq(length(attrs))){
+    df[[attrs[i]]] <- get.vertex.attribute(nw(), attrs[i])
+  }
+  df[["Missing"]] <- get.vertex.attribute(nw(), "na")
+  dt <- df[, c("Names", input$attribcols)]
+  dt
+}, options = list(pageLength = 10))
+
+output$attrcheck <- renderUI({
+  checkboxGroupInput("attribcols",
+                     label = "Include these attributes in the table",
+                     choices = c(menuattr(), "Missing"),
+                     selected = c(menuattr(), "Missing"))
+})
 
 #Data to use for null hypothesis overlays in network plots
 uniformsamples <- reactive({
@@ -2085,11 +2128,14 @@ output$dynamiccugterm <- renderUI({
   if(!is.network(nw())){return()}
   if(is.directed(nw())){
     choices <- c("density", "isolates", "mean degree" = "meandeg", "mutual",
-                 "transitive triads" = "transitive", "twopath")
+                 "transitive triads" = "transitive", "triangle", "twopath")
   } else {
-    choices <- c("density", "concurrent", "isolates", "mean degree" = "meandeg")
+    choices <- c("density", "concurrent", "isolates", "mean degree" = "meandeg",
+                 "triangle")
   }
-  selectInput("cugtestterm", label = "Model term",
+  #matchingterms <- splitargs(nw = nw())
+  #choices <- matchingterms$names[matchingterms$args == "()"]
+  selectizeInput("cugtestterm", label = "Model term",
               choices = choices)
 })
 outputOptions(output, 'dynamiccugterm', suspendWhenHidden = FALSE)
@@ -2133,29 +2179,29 @@ output$cugtest <- renderPlot({
       }
       return(breaks)
     }
-    
+
     xlims <- c(min(brgvals, cugvals, obsval) - diff(brghist$breaks)[1],
                max(brgvals, cugvals, obsval) + diff(brghist$breaks)[1])
-    
+
     cughist <- hist(cugvals, breaks = getbreaks, plot = FALSE)
     par(lwd = 2)
-    hist(brgvals, col = tgray3,  
+    hist(brgvals, col = tgray3,
          border = BRGcol, ylab = NULL, main = NULL, xlab= NULL,
          xaxt = "n",
          xlim = xlims,
          ylim = c(0, max(brghist$counts, cughist$counts)),
          breaks = brghist$breaks)
-    
+
     if (term == "density" | term == "meandeg"){
       abline(v = cugvals[1], col = CUGcol)
     } else {
       hist(cugvals, col = tgray7, density = 15, angle = -45,
-           border = CUGcol, ylab = NULL, main = NULL, xlab= NULL, 
+           border = CUGcol, ylab = NULL, main = NULL, xlab= NULL,
            axes = FALSE,
            breaks = getbreaks, add = TRUE)
-      
+
     }
-    
+
     axis(side = 1, at = round(c(xlims[1], cughist$breaks, xlims[2]), digits = 3))
     points(x = obsval, y = 0, col = obsblue, pch = 17, cex = 2)
 
@@ -2175,13 +2221,13 @@ output$cugtestdownload <- downloadHandler(
     term <- input$cugtestterm
     n <- nodes()
     obsval <- summary.formula(as.formula(paste("nw() ~", term)))
-    
+
     # gets summary statistics of the already run simulations
     brgvals <- brgvals()
     cugvals <- cugvals()
-    
+
     brghist <- hist(brgvals, plot = FALSE)
-    
+
     getbreaks <- function(x){
       breaks <- brghist$breaks
       r <- range(brghist$breaks)
@@ -2198,35 +2244,35 @@ output$cugtestdownload <- downloadHandler(
       }
       return(breaks)
     }
-    
+
     xlims <- c(min(brgvals, cugvals, obsval) - diff(brghist$breaks)[1],
                max(brgvals, cugvals, obsval) + diff(brghist$breaks)[1])
-    
+
     cughist <- hist(cugvals, breaks = getbreaks, plot = FALSE)
-    
+
     pdf(file = file)
-    
+
     par(lwd = 2)
-    hist(brgvals, col = tgray3,  
+    hist(brgvals, col = tgray3,
          border = BRGcol, ylab = NULL, main = NULL, xlab= NULL,
          xaxt = "n",
          xlim = xlims,
          ylim = c(0, max(brghist$counts, cughist$counts)),
          breaks = brghist$breaks)
-    
+
     if (input$cugtestterm == "density" | input$cugtestterm == "meandeg"){
       abline(v = cugvals[1], col = CUGcol)
     } else {
       hist(cugvals, col = tgray7, density = 15, angle = -45,
-           border = CUGcol, ylab = NULL, main = NULL, xlab= NULL, 
+           border = CUGcol, ylab = NULL, main = NULL, xlab= NULL,
            axes = FALSE,
            breaks = getbreaks, add = TRUE)
-      
+
     }
-    
+
     axis(side = 1, at = round(c(xlims[1], cughist$breaks, xlims[2]), digits = 3))
     points(x = obsval, y = 0, col = obsblue, pch = 17, cex = 2)
-    
+
     legend(x = "topright", bty = "n",
            legend = c("Observed value", "CUG distribution", "BRG distribution"),
            pch = c(17, NA, NA), col = obsblue, fill = c(0, tgray7, tgray3),
@@ -2252,7 +2298,16 @@ output$mixingmatrix <- renderPrint({
 })
 outputOptions(output,'mixingmatrix',suspendWhenHidden=FALSE)
 
-# update all the menu selection options when network changes
+output$mixmxdownload <- downloadHandler(
+  filename = function() {paste0(nwname(), "_mixingmatrix.csv")},
+  contentType = "text/csv",
+  content = function(file) {
+    mx <- mixingmatrix(nw(), input$mixmx)[["matrix"]]
+    write.csv(mx, file = file)
+  }
+)
+
+# update all the menu selection options for descriptive indices when network changes
 observeEvent(nw(), {
   if(is.directed(nw())){
     degmenu <- c('indegree', 'outdegree')
@@ -2546,7 +2601,7 @@ output$nstress <- renderText({
     gmode <- 'graph'
   }
   s <- ""
-  try(s <- stresscent(nw(), nodes=input$nodeind, gmode=gmode,
+  try(s <- sna::stresscent(nw(), nodes=input$nodeind, gmode=gmode,
                       diag=has.loops(nw()),
                       cmode=input$nstresscmode))
   s
@@ -2559,7 +2614,7 @@ output$nstressmin <- renderText({
   } else {
     gmode <- 'graph'
   }
-  s <- stresscent(nw(), gmode=gmode, diag=has.loops(nw()),
+  s <- sna::stresscent(nw(), gmode=gmode, diag=has.loops(nw()),
                   cmode=input$nstresscmode)
   min(s)
 })
@@ -2571,7 +2626,7 @@ output$nstressmax <- renderText({
   } else {
     gmode <- 'graph'
   }
-  s <- stresscent(nw(), gmode=gmode, diag=has.loops(nw()),
+  s <- sna::stresscent(nw(), gmode=gmode, diag=has.loops(nw()),
                   cmode=input$nstresscmode)
   max(s)
 })
@@ -2740,29 +2795,22 @@ output$listofterms <- renderUI({
     return()
   }
   if(state$allterms){
-    current.terms <- unlist(allterms)
+    current.terms <- allterms$names
   } else {
-    sink("NUL") # prevents terms from printing to console
-    matchterms <- search.ergmTerms(net=nw())
-    sink()
-    ind <- regexpr(pattern='\\(', matchterms)
-    for(i in 1:length(matchterms)){
-      matchterms[i] <- substr(matchterms[[i]], start=1, stop=ind[i]-1)
-    }
-    matchterms <- unique(matchterms)
-    current.terms <- unlist(matchterms)
+    matchterms <- splitargs(nw = nw())
+    current.terms <- matchterms$names
   }
-  selectizeInput('chooseterm',label = NULL,
-              choices = c("Select a term", current.terms))
+  selectizeInput('chooseterm', label = NULL,
+                 choices = c("Select a term" = "", current.terms))
 })
 
 output$termdoc <- renderPrint({
   myterm <- input$chooseterm
   if(is.null(myterm)){
-    return(cat("Choose a term from the dropdown menu."))
+    return(cat("Select or search for a term in the menu above."))
   }
-  if(myterm == "Select a term"){
-    return(cat("Choose a term from the dropdown menu."))
+  if(myterm == ""){
+    return(cat("Select or search for a term in the menu above."))
   }
   search.ergmTerms(name=myterm)
 })
@@ -3010,9 +3058,9 @@ outputOptions(output, 'diagnostics', suspendWhenHidden=FALSE)
 # Goodness of Fit ---------------------------------------------------------
 
 
-# One drawback of the navbarPage layout option is that you can't specify 
-# certain elements or panels to show up on multiple pages. Furthermore, 
-# Shiny will not let you use the same piece of output from server.R twice 
+# One drawback of the navbarPage layout option is that you can't specify
+# certain elements or panels to show up on multiple pages. Furthermore,
+# Shiny will not let you use the same piece of output from server.R twice
 # in ui.R. Therefore, output$currentdataset2 and output$check2 are the same as
 # output$currentdataset and output$check1 with different names.
 
@@ -3345,7 +3393,9 @@ observe({
   input$choosemodel_sim
   input$fitButton
   state$sim <- 0 #simulations are outdated
-  updateNumericInput(session, "nsims", value=1)
+  updateNumericInput(session, "thissim",
+                     label = "Choose a simulation to plot:",
+                     value = 1, min = 1, max = input$nsims)
 })
 
 observe({
