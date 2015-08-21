@@ -1,10 +1,10 @@
-92adf62bf71d6de6c7ab8062a8865d97 *DESCRIPTION
+4b104af43486da841fc0ccd3670f5acc *DESCRIPTION
 3bb57099a808b048dc3841ad14adfa71 *NAMESPACE
-89610bfab98998837d453748e413208a *R/run_sw.R
+4fdc2eac6d8c9e05fb7f783d09b3a506 *R/run_sw.R
 59de36c327d1973be2d83d48c65fa52b *R/statnetWeb-package.R
 170b58ebf1617d67c9fe887c2a5757e2 *README.md
 e18959dee6e94d8014763d43fae0d66e *inst/shiny/global.R
-b5d52da3b4b591bf984c148210c3b9a6 *inst/shiny/server.R
+aa1c31609c90234f7570349d8d80f00d *inst/shiny/server.R
 3c060cf45dbfac7261b5112d4cca806d *inst/shiny/ui.R
 6834d042f2c5c16693f8581100551ac0 *inst/shiny/www/200px-Icon-round-Question_mark.svg.png
 d3a1e94edd4f319cecc46c20538636d8 *inst/shiny/www/UW.Wordmark_ctr_K.jpg
