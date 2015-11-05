@@ -1,7 +1,8 @@
 
 library(statnetWeb)
 library(RColorBrewer)
-library(ndtv)
+library(lattice)
+library(latticeExtra)
 
 data(faux.mesa.high)
 #data(faux.magnolia.high)
@@ -463,6 +464,10 @@ nw <- reactive({
   nw_var
 })
 
+elist <- reactive({
+  if(!is.network(nwinit())) return()
+  as.edgelist(nw())
+})
 
 #get coordinates to plot network with
 coords <- reactive({
@@ -508,7 +513,25 @@ numattr <- reactive({
           numattr <- append(numattr,attrib()[i])
         }
       }}
-    numattr})
+    numattr
+})
+
+#dataframe of nodes, their attributes, and their coordinates in nwplot
+nwdf <- reactive({
+  attrs <- menuattr()
+  if(is.na(as.numeric(network.vertex.names(nw()))[1])){
+    df <- data.frame(Names = network.vertex.names(nw()))
+  } else {
+    df <- data.frame(Names = as.numeric(network.vertex.names(nw())))
+  }
+  for(i in seq(length(attrs))){
+    df[[attrs[i]]] <- get.vertex.attribute(nw(), attrs[i])
+  }
+  df[["Missing"]] <- get.vertex.attribute(nw(), "na")
+  df[["cx"]] <- coords()[,1]
+  df[["cy"]] <- coords()[,2]
+  df
+})
 
 # betweenness centrality of all nodes (for sizing menu)
 nodebetw <- reactive({
@@ -547,7 +570,7 @@ vcol <- reactive({
   if(!is.network(nw())){return()}
   nw_var <- nw()
   if(input$colorby == 2){
-    vcol <- 2
+    vcol <- rep(2, nodes())
   } else {
     full_list <- get.vertex.attribute(nw_var,input$colorby)
     short_list <- sort(unique(full_list))
@@ -1303,6 +1326,9 @@ output$nwplot <- renderPlot({
 
   nw_var <- nw()
   color <- adjustcolor(vcol(), alpha.f = input$transp)
+  ecolor <- 1
+  vborder <- 1
+  vcex <- nodesize()
   if(is.bipartite(nw())){
     sides <- c(rep(50, nw()$gal$bipartite),
                rep(3, nodes() - nw()$gal$bipartite))
@@ -1310,17 +1336,83 @@ output$nwplot <- renderPlot({
     sides <- 50
   }
 
+  if(!is.null(values$hoverpoints)){
+    if(nrow(values$hoverpoints) > 0){
+      nhov <- as.numeric(rownames(values$hoverpoints))
+      vcex <- rep(1, nodes())
+      vcex[nhov] <- 2
+    }
+  }
+  if(!is.null(values$clickedpoints)){
+    if(nrow(values$clickedpoints) > 0){
+      nclick <- as.numeric(rownames(values$clickedpoints))
+      color <- adjustcolor(vcol(), alpha.f = 0.4)
+      color[nclick] <- vcol()[nclick]
+      ecolor <- "lightgrey"
+      vborder <- rep("lightgrey", nodes())
+      vborder[nclick] <- 1
+    }
+  }
+  if(!is.null(values$dblclickpoints)){
+    if(nrow(values$dblclickpoints) > 0){
+      ndbl <- as.numeric(rownames(values$dblclickpoints))
+      neighb <- nw()[ndbl,] == 1
+      color <- adjustcolor(vcol(), alpha.f = 0.4)
+      color[ndbl] <- vcol()[ndbl]
+      ecolor <- rep("lightgrey", nedgesinit())
+      ecolor[apply(elist(), MARGIN = 1, FUN = function(x){any(x == ndbl)})] <- "black"
+      vborder <- rep("lightgrey", nodes())
+      vborder[neighb] <- "black"
+      vborder[ndbl] <- "black"
+    }
+  }
+
   par(mar = c(0, 0, 0, 0))
   plot.network(nw_var, coord = coords(),
                displayisolates = input$iso,
                displaylabels = input$vnames,
                vertex.col = color,
+               vertex.border = vborder,
                vertex.sides = sides,
-               vertex.cex = nodesize())
+               vertex.cex = vcex,
+               edge.col = ecolor)
   if(input$colorby != 2){
-    legend('bottomright', title = input$colorby, legend = legendlabels(), fill = legendfill(),
-           bty='n')
+    legend('bottomright', title = input$colorby, legend = legendlabels(),
+           fill = legendfill(), bty='n')
   }
+
+  if(!is.null(values$clickedpoints)){
+    if(nrow(values$clickedpoints) > 0){
+      #isolate(legend("topleft",
+      #               legend = values$clickedpoints[, c("Names", menuattr())]))
+      cx <- values$clickedpoints[, "cx"]
+      cy <- values$clickedpoints[, "cy"]
+      name <- values$clickedpoints[, "Names"]
+      attrlabel <- paste("\n", menuattr())
+      text(x = cx, y = cy,
+           labels = paste0(name,
+                           paste(attrlabel, values$clickedpoints[, menuattr()],
+                                 collapse = "")),
+           pos = 4, offset = 1)
+    }
+  }
+
+})
+
+observeEvent({c(input$plot_click, input$plot_dblclick)}, {
+  values$clickedpoints <- nearPoints(nwdf(), input$plot_click,
+                                     xvar = "cx", yvar = "cy",
+                                     threshold = 10, maxpoints = 1)
+})
+observeEvent(input$plot_hover, {
+  values$hoverpoints <- nearPoints(nwdf(), input$plot_hover,
+                                   xvar = "cx", yvar = "cy",
+                                   threshold = 10, maxpoints = 1)
+})
+observeEvent({c(input$plot_dblclick, input$plot_click)}, {
+  values$dblclickpoints <- nearPoints(nwdf(), input$plot_dblclick,
+                                      xvar = "cx", yvar = "cy",
+                                      threshold = 10, maxpoints = 1)
 })
 
 
@@ -1343,26 +1435,83 @@ output$nwplotdownload <- downloadHandler(
   }
   )
 
-output$attrtbl <- renderDataTable({
-  attrs <- menuattr()
-  if(is.na(as.numeric(network.vertex.names(nw()))[1])){
-    df <- data.frame(Names = network.vertex.names(nw()))
-  } else {
-    df <- data.frame(Names = as.numeric(network.vertex.names(nw())))
-  }
-  for(i in seq(length(attrs))){
-    df[[attrs[i]]] <- get.vertex.attribute(nw(), attrs[i])
-  }
-  df[["Missing"]] <- get.vertex.attribute(nw(), "na")
-  dt <- df[, c("Names", input$attribcols)]
+output$attrcheck <- renderUI({
+  checkboxGroupInput("attrcols",
+                     label = "Include these attributes",
+                     choices = c(menuattr(), "Missing"),
+                     selected = c(menuattr(), "Missing"))
+})
+outputOptions(output, "attrcheck", suspendWhenHidden = FALSE)
+
+output$attrtbl_lg <- renderDataTable({
+  dt <- nwdf()[, c("Names", input$attrcols)]
   dt
 }, options = list(pageLength = 10))
 
-output$attrcheck <- renderUI({
-  checkboxGroupInput("attribcols",
-                     label = "Include these attributes in the table",
-                     choices = c(menuattr(), "Missing"),
-                     selected = c(menuattr(), "Missing"))
+output$attrtbl_sm <- renderPrint({
+  ntbl <- length(input$attrcols)
+  if(ntbl == 0){return()}
+  attrname <- input$attrcols
+  tbl_list <- list()
+  if(ntbl == 1){
+    tab <- attr.info(df = nwdf(), colname = attrname,
+                     numattrs = numattr(), breaks = 10)
+    tbl_list[[attrname]] <- tab
+  } else {
+    for(a in attrname){
+      tab <- attr.info(df = nwdf(), colname = a,
+                       numattrs = numattr(), breaks = 10)
+      tbl_list[[a]] <- tab
+    }
+  }
+  for(a in attrname){
+    print(a, quote = FALSE)
+    print(tbl_list[[a]])
+  }
+})
+
+output$attrhist <- renderPlot({
+  nplots <- length(input$attrcols)
+  if(nplots == 0){return()}
+  attrname <- input$attrcols
+  if(nplots == 1){
+    par(mfrow = c(1, 1))
+    lvls <- length(unique(nwdf()[[attrname]]))
+    if(input$attrhistaxis == "density" & attrname %in% numattr() & lvls > 9){
+      plot(density(nwdf()[[attrname]]), main = attrname,
+           col = "#076EC3", lwd = 2)
+    } else {
+      tab <- attr.info(df = nwdf(), colname = attrname,
+                       numattrs = numattr(), breaks = 10)
+      if(input$attrhistaxis == "percent"){
+        tab <- tab/sum(tab)
+      }
+      barplot(tab, main = attrname, col = histblue)
+    }
+  } else {
+    r <- ceiling(nplots/2)
+    par(mfrow = c(r, 2))
+    for(a in attrname){
+      lvls <- length(unique(nwdf()[[a]]))
+      if(input$attrhistaxis == "density" & a %in% numattr() & lvls > 9){
+        plot(density(nwdf()[[a]]), main = a, col = "#076EC3", lwd = 2)
+      } else {
+        tab <- attr.info(df = nwdf(), colname = a,
+                         numattrs = numattr(), breaks = 10)
+        if(input$attrhistaxis == "percent"){
+          tab <- tab/sum(tab)
+        }
+        barplot(tab, main = a, col = histblue)
+      }
+    }
+  }
+})
+
+output$attrhistplotspace <- renderUI({
+  nplots <- length(input$attrcols)
+  r <- ceiling(nplots/2)
+  h <- ifelse(r == 1, 400, r * 300)
+  plotOutput("attrhist", height = h)
 })
 
 #Data to use for null hypothesis overlays in network plots
@@ -2803,15 +2952,19 @@ output$listofterms <- renderUI({
                  choices = c("Select a term" = "", current.terms))
 })
 
-output$termdoc <- renderPrint({
+output$termdoc <- renderUI({
   myterm <- input$chooseterm
   if(is.null(myterm)){
-    return(cat("Select or search for a term in the menu above."))
+    return(p("Select or search for a term in the menu above."))
+  } else if(myterm == ""){
+    return(p("Select or search for a term in the menu above."))
   }
-  if(myterm == ""){
-    return(cat("Select or search for a term in the menu above."))
-  }
-  search.ergmTerms(name=myterm)
+  chrvec <- capture.output(search.ergmTerms(name = myterm))
+  desc <- strsplit(chrvec[3], split = "_")
+  p(chrvec[1], br(),br(),
+    strong(chrvec[2]), br(),br(),
+    em(desc[[1]][2]), desc[[1]][3], br(),
+    chrvec[4])
 })
 
 observe({
