@@ -541,7 +541,7 @@ fluidRow(
                plotOutput('geodistplot')
                ),
       tabPanel('More', value='More', br(),
-               h5('Conditional uniform graph tests', icon('angle-double-left'),
+               h5('Null model tests', icon('angle-double-left'),
                   id="cugtitle"),
                wellPanel(id="cugbox",
                  column(4, uiOutput("dynamiccugterm")),
@@ -734,6 +734,8 @@ fluidRow(
        tabPanel(title='Display Options', br(),
           wellPanel(
                 conditionalPanel(condition='input.plottabs == "Network Plot"',
+                   selectInput('activeplot', label = NULL,
+                               choices = c("Static Plot", "Interactive Plot")),
                    checkboxInput('iso',
                                  label = 'Display isolates',
                                  value = TRUE),
@@ -1110,9 +1112,11 @@ tabPanel(title='Goodness of Fit',value='tab6',
                   verbatimTextOutput('checkterms_gof'))
           ),
          p('If you do not specify a term the default formula for undirected
-           networks is ', code('~ degree + espartners + distance'), 'and for
+           networks is ', code('~ degree + espartners + distance + model'), 'and for
            directed networks is ', code('~ idegree + odegree + espartners +
-                                        distance'), '.'),
+                                        distance + model'), '.  ',
+           'The "model" plot shows how well the fitted model reproduces the observed values for the 
+           terms in the model (the sufficient statistics), and can be used to assess convergence.'),
          fluidRow(
             column(2,
                    p("Goodness of fit term:"),
