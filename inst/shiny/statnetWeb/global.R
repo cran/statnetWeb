@@ -1,5 +1,5 @@
 
-library(statnetWeb)
+#library(statnetWeb)
 
 # version of textInput with more size options.
 # specify class = 'input-small' or class='input-mini' in
@@ -67,7 +67,7 @@ disableWidget <- function(id, session, disabled = TRUE) {
 # function to return tests on simulated graphs
 cugstats <- function(x, term, directed, loops) {
   nw <- network(x, directed = directed, loops = loops)
-  summary.statistics(as.formula(paste("nw ~ ", term)))
+  summary(as.formula(paste("nw ~ ", term)))
 }
 
 
