@@ -1,12 +1,12 @@
-d660b7921b9692ef9d7b82967b4ef3e3 *DESCRIPTION
+90f58d13bfa0af16674ebd43de3efd0f *DESCRIPTION
 ef5d1d7c46dfa1918c974ee64129a989 *NAMESPACE
 404de41c4f237b73401c8a208500f579 *R/run_sw.R
 1635dec31457f9f8778a0f2afda5f80b *R/statnetWeb-package.R
 b6c3b017796c6bd0f100c3c5efdfa14d *README.md
 a444b7100edb8c6cbbfc2405f5999232 *inst/shiny/statnetWeb/global.R
 68f397fc95453c74bf922dfaac68f34f *inst/shiny/statnetWeb/rsconnect/shinyapps.io/statnet/statnetWeb.dcf
-b6b709c48cbcd4e226db3e27c13ca978 *inst/shiny/statnetWeb/server.R
-a46565979e3e31a0c03cf86cad3678d3 *inst/shiny/statnetWeb/ui.R
+fdb00ed0f861645e433fdcc6c5c33bf5 *inst/shiny/statnetWeb/server.R
+a4ab91ee6625668d4e894fac9785bf00 *inst/shiny/statnetWeb/ui.R
 6834d042f2c5c16693f8581100551ac0 *inst/shiny/statnetWeb/www/200px-Icon-round-Question_mark.svg.png
 d3a1e94edd4f319cecc46c20538636d8 *inst/shiny/statnetWeb/www/UW.Wordmark_ctr_K.jpg
 eeda3323d02a462591fddf55e61d0a33 *inst/shiny/statnetWeb/www/ajax-loader.gif
