@@ -35,20 +35,20 @@ inlineSelectInput <- function(inputId, label, choices, ...) {
 }
 
 # create a list of unique term names
-splitargs <- function(searchterm, nw){
+# allow searching by string -- set to NULL to get search by nw attributes
+splitargs <- function(string, nw){
   sink("NUL")
-  allterms <- search.ergmTerms(keyword = searchterm, net = nw)
+  allterms <- search.ergmTerms(search = string, net = nw)
   sink()
   ind1 <- regexpr(pattern = "\\(", allterms)
   ind2 <- regexpr(pattern = "\\)", allterms)
   termnames <- substr(allterms, start = rep(1, length(allterms)), stop = ind1 - 1)
   termargs <- substr(allterms, start = ind1, stop = ind2)
   dups <- duplicated(termnames)
-  termargs <- termargs[-which(dups)]
-  termnames <- unique(termnames)
+  termnames <- termnames[!dups]
+  termargs <- termargs[!dups]
   list(names = termnames, args = termargs)
 }
-
 
 
 # disable widgets when they should not be usable
@@ -74,11 +74,12 @@ cugstats <- function(x, term, directed, loops) {
 # Takes an ergm object and gathers some of the information from
 # summary.ergm, in preparation to be passed to the function
 # coef.comparison.
+# NOTE: this is not very robust to changes in the fit object structure
 ergm.info <- function(object) {
-  coefs <- object$coef
-  terms <- names(object$coef)
-  coefmatrix <- summary(object)$coefs
-  pval <- coefmatrix[, 4]
+  coefs <- coef(object)
+  terms <- names(coefs)
+  coefmatrix <- summary(object)$coefficients
+  pval <- coefmatrix[, 5]
   signif.stars <- symnum(pval, corr = FALSE, na = FALSE,
                          cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1),
                          symbols = c("***", "**", "*", ".", " "), legend = F)
@@ -90,8 +91,8 @@ ergm.info <- function(object) {
     ans[i] <- starredcoef[count]
     count <- count + 1
   }
-  ans$AIC <- format(summary(object)$aic, digits = 3)
-  ans$BIC <- format(summary(object)$bic, digits = 3)
+  ans$AIC <- format(AIC(object)[1], digits = 3)
+  ans$BIC <- format(BIC(object)[1], digits = 3)
   ans
 }
 

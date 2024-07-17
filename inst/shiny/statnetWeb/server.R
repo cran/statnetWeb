@@ -22,7 +22,8 @@ histblue <- "#83B6E1"
 tgray3 <- adjustcolor("gray", alpha.f = 0.3)
 tgray7 <- adjustcolor("gray", alpha.f = 0.7)
 
-allterms <- splitargs(searchterm = "")
+# All ergm terms (no network or search terms passed)
+allterms <- splitargs()
 
 shinyServer(
   function(input, output, session){
@@ -1464,7 +1465,7 @@ output$attrcheck <- renderUI({
 })
 outputOptions(output, "attrcheck", suspendWhenHidden = FALSE)
 
-output$attrtbl_lg <- renderDataTable({
+output$attrtbl_lg <- DT::renderDT({
   dt <- nwdf()[, c("Names", input$attrcols)]
   dt
 }, options = list(pageLength = 10))
@@ -2981,11 +2982,11 @@ output$termdoc <- renderUI({
     return(p("Select or search for a term in the menu above."))
   }
   chrvec <- capture.output(search.ergmTerms(name = myterm))
-  desc <- strsplit(chrvec[3], split = "_")
+  desc <- strsplit(capture.output(cat(chrvec[3:(length(chrvec)-2)])), split = ":")
   p(chrvec[1], br(),br(),
     strong(chrvec[2]), br(),br(),
-    em(desc[[1]][2]), desc[[1]][3], br(),
-    chrvec[4])
+    em(paste0(desc[[1]][1], ": ")), desc[[1]][2], br(),br(),
+    em(chrvec[length(chrvec)-1]))
 })
 
 observe({
@@ -3126,10 +3127,10 @@ outputOptions(output, "modelfitsum", priority = -10)
 output$uichoosemodel_mcmc <- renderUI({
   n <- values$modeltotal
   if(n == 0){
-    inlineSelectInput("choosemodel_mcmc",label=NULL,
+    selectInput("choosemodel_mcmc",label=NULL,
                 choices=c("Current"))
   } else {
-    inlineSelectInput("choosemodel_mcmc",label=NULL,
+    selectInput("choosemodel_mcmc",label=NULL,
                 choices=c(paste0("Model",1:n)))
   }
 })
@@ -3254,10 +3255,10 @@ output$currentdataset_gof <- renderPrint({
 output$uichoosemodel_gof <- renderUI({
   n <- values$modeltotal
   if(n == 0){
-    inlineSelectInput("choosemodel_gof",label=NULL,
+    selectInput("choosemodel_gof",label=NULL,
                       choices=c("Current"))
   } else {
-    inlineSelectInput("choosemodel_gof",label=NULL,
+    selectInput("choosemodel_gof",label=NULL,
                       choices=c(paste0("Model",1:n)))
   }
 })
@@ -3388,11 +3389,11 @@ output$gofplotcomp <- renderPlot({
   if (gofterm == 'Default'){
     if(is.directed(nw())){
       cols <- isolate(5)
-      bottomtext <- c("idegree","odegree","espartners","distance","Model Terms")
+      bottomtext <- c("Model Terms", "idegree","odegree","espartners","distance")
       bottommat <- c(0,(n*cols+1):(n*cols+5))
     } else {
       cols <- isolate(4)
-      bottomtext <- c("degree","espartners","distance","Model Terms")
+      bottomtext <- c("Model Terms","degree","espartners","distance")
       bottommat <- c(0,(n*cols+1):(n*cols+4))
     }
     innermat <- matrix(1:(n*cols),ncol=cols, byrow=TRUE)
@@ -3532,10 +3533,10 @@ output$gofplotcompdownload <- downloadHandler(
 output$uichoosemodel_sim <- renderUI({
   n <- values$modeltotal
   if(n == 0){
-    inlineSelectInput("choosemodel_sim",label=NULL,
+    selectInput("choosemodel_sim",label=NULL,
                       choices=c("Current"))
   } else {
-    inlineSelectInput("choosemodel_sim",label=NULL,
+    selectInput("choosemodel_sim",label=NULL,
                       choices=c(paste0("Model",1:n)))
   }
 })

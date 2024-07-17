@@ -40,9 +40,9 @@ tabPanel(title=span('statnetWeb', id="sWtitle"),
               "for newcomers to exponential random graphs models, and for experienced network modelers",
               "who want easier access to analysis results. If you are new to ergm, you may find it helpful",
               "to work through the", a("ergm tutorial on our Workshop page",
-                                       href="https://github.com/statnet/Workshops/wiki",
-                                       target="_blank"), "using this interface. Advanced users will still want to interact",
-              "via the command line in order to access the full functionality of ergm."),
+                                       href="https://statnet.org/workshops/",
+                                       target="_blank"), "using this interface. To access the full functionality of the ergm package,",
+              "however, you will need to use it via the traditional R command line."),
             p("A typical network analysis will move sequentially through the tabs at the top of the page.",
               "Click on the help icon at the top of any page for guidance."),
             p("Bug Reports/comments/suggestions/requests? Please share them with us.",
@@ -60,7 +60,7 @@ tags$pre(id='scitation','@Manual{handcock:statnet,
   author = {Mark S. Handcock and David R. Hunter and Carter T. Butts and Steven M. Goodreau and Martina Morris},
   year = {2003},
   address = {Seattle, WA},
-  url = {http://statnet.org/}
+  url = {https://statnet.org/}
 }'),
 
 p(strong("statnetWeb")),
@@ -75,14 +75,16 @@ tags$pre(id='swcitation',"@Manual{beylerian:statnetWeb,
                        ),
               tabPanel("Other",
 p(strong("statnet")),
-tags$pre("Mark S. Handcock, David R. Hunter, Carter T. Butts, Steven M. Goodreau, and
-Martina Morris (2003). statnet: Software tools for the Statistical Modeling
-of Network Data. URL http://statnetproject.org"),
+tags$pre("Statnet Development Team (Pavel N. Krivitsky, Mark S. Handcock, 
+David R. Hunter, Carter T. Butts, Michal Bojanowski, Chad Klumb, 
+Steven M. Goodreau, and Martina Morris) (2003-2024). 
+statnet: Software tools for the Statistical Modeling of Network Data. 
+         URL https://statnet.org"),
 
 p(strong("statnetWeb")),
 tags$pre("Emily N. Beylerian, Samuel Jenness, Kirk Li, and Martina Morris (2014).
 statnetWeb: A Graphical User Interface for Network Modeling with 'Statnet'.")
-                       )
+              )
             ),
 
             p('If you use statnet or statnetWeb, please cite them.',
@@ -90,10 +92,10 @@ statnetWeb: A Graphical User Interface for Network Modeling with 'Statnet'.")
               'and the component packages can be found here:'),
             tags$ul(
               tags$li(a('Citing statnet',
-                        href='http://statnet.org/attribution',
+                        href='https://statnet.org/attribution#citation',
                         target='_blank')),
               tags$li(a('License and source code attribution requirements',
-                        href = 'http://statnet.org/attribution',
+                        href = 'https://statnet.org/attribution#license-and-attribution',
                         target = '_blank')),
               tags$li(a('statnet Organization on GitHub',
                         href = 'https://github.com/statnet',
@@ -111,32 +113,32 @@ statnetWeb: A Graphical User Interface for Network Modeling with 'Statnet'.")
               div(title=paste("Homepage of the statnet project with tutorials,",
                               "publications and recent news."),
                   a("About statnet",
-                    href = "http://statnet.org/", target = "_blank")
+                    href = "https://statnet.org/about/", target = "_blank")
               ),
 
               column(11, offset = 1,
                     span(id="linktitle1",'Key background papers',icon('angle-double-left')),br(),
                     div(id="linkbox1",
                       a("ergm: Journal of Statistical Software",
-                        href = "http://www.jstatsoft.org/v24/i03/", target = "_blank"),
+                        href = "https://www.jstatsoft.org/article/view/v024i03", target = "_blank"),
                       br(),
                       a("Using ergm: Journal of Statistical Software",
-                        href = "http://www.jstatsoft.org/v24/i04/", target = "_blank")),
+                        href = "https://www.jstatsoft.org/article/view/v024i04", target = "_blank")),
 
                     span(id="linktitle2",'Tutorials and documentation',icon('angle-double-left')),br(),
                     div(id="linkbox2",
                         a("ergm tutorial",
-                        href = "https://github.com/statnet/Workshops/wiki",
+                        href = "https://statnet.org/workshops/",
                         target= "_blank"),
                       br(),
                       a("ergm documentation on CRAN",
-                        href = "http://cran.r-project.org/web/packages/ergm/ergm.pdf",
+                        href = "https://cran.r-project.org/web/packages/ergm/ergm.pdf",
                         target = "_blank")),
                     style="margin-bottom:10px;"),
               br(),
               div(a("statnetWeb on GitHub", href="https://github.com/statnet/statnetWeb",
                     target="_blank")),
-              div(a("Shiny: a web application framework for R", href="http://shiny.rstudio.com/",
+              div(a("Shiny: a web application framework for R", href="https://shiny.posit.co/",
                     target="_blank"))
    ),
    fluidRow(img(src= 'UW.Wordmark_ctr_K.jpg', width=200), style="margin-left:15px;"),
@@ -170,12 +172,12 @@ tabPanel(title='Data', value='tab2',
          tagList(
            tags$head(
              tags$link(rel="stylesheet", type="text/css",href="style.css"),
-             #tags$link(rel="stylesheet", type="text/css",href="autocomplete.css"),
-             tags$link(rel="stylesheet", type="text/css",
-                       href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css"),
-             tags$script(type="text/javascript", src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"),
-             #tags$script(type="text/javascript", src="autocomplete.js"),
-             tags$script(type="text/javascript", src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"),
+             # tags$link(rel="stylesheet", type="text/css",href="autocomplete.css"),
+             # tags$link(rel="stylesheet", type="text/css",
+             #           href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css"),
+             # tags$script(type="text/javascript", src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"),
+             # tags$script(type="text/javascript", src="autocomplete.js"),
+             # tags$script(type="text/javascript", src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"),
              tags$script(type="text/javascript", src="busy.js"),
              tags$script(type="text/javascript", src="alert.js"),
              tags$script(HTML('Shiny.addCustomMessageHandler("jsCode",
@@ -500,10 +502,10 @@ fluidRow(
                            )
         ),
       tabPanel('Attributes', br(),
-               conditionalPanel('input.attrview == "Large table"',
-                                dataTableOutput("attrtbl_lg")
+               conditionalPanel('input.attrview == "Raw Data"',
+                                DT::DTOutput("attrtbl_lg")
                                 ),
-               conditionalPanel('input.attrview == "Small tables"',
+               conditionalPanel('input.attrview == "Frequency tables"',
                                 verbatimTextOutput("attrtbl_sm")
                                 ),
                conditionalPanel('input.attrview == "Plot summaries"',
@@ -764,8 +766,8 @@ fluidRow(
                                   label = "Download Plot", class = "btn-sm")),
                 conditionalPanel(condition='input.plottabs == "Attributes"',
                                  selectInput("attrview", label = "View attributes in:",
-                                             choices = c("Large table",
-                                                         "Small tables",
+                                             choices = c("Raw Data",
+                                                         "Frequency tables",
                                                          "Plot summaries")),
                                  br(),
                                  uiOutput("attrcheck")
@@ -905,10 +907,10 @@ actionLink('plotright', icon=icon('arrow-right', class='fa-2x'), label=NULL)
                       fluidRow(
                         column(12,
                                a("Commonly used ergm terms",
-                                 href = "https://github.com/statnet/statnetWeb/blob/master/inst/html/d2-sX-ergmterms.html",
+                                 href = "https://github.com/statnet/statnetWeb/wiki/Commonly-used-ERGM-terms",
                                  target = "_blank"), br(),
                                a("Term cross-reference tables",
-                                 href = "http://cran.r-project.org/web/packages/ergm/vignettes/ergm-term-crossRef.html",
+                                 href = "https://cran.r-project.org/web/packages/ergm/vignettes/ergm-term-crossRef.html",
                                  target = "_blank"), br(), br()
                                ),
                         column(6,
@@ -936,9 +938,8 @@ actionLink('plotright', icon=icon('arrow-right', class='fa-2x'), label=NULL)
                     div(class = "placeholder",
                     fluidRow(class = "shiftright",
                       column(3, style = "padding-left: 0;",
-                        inlineSelectInput('controltype',label = NULL,
-                                          choices = c("MCMC"),
-                                          style="margin:10px 0px;")),
+                        selectInput('controltype',label = NULL,
+                                          choices = c("MCMC"))),
                       column(5,
                         checkboxInput('controldefault', 'Use default options', value = TRUE))
                     ),
@@ -1111,9 +1112,9 @@ tabPanel(title='Goodness of Fit',value='tab6',
                   verbatimTextOutput('checkterms_gof'))
           ),
          p('GOF is based on 100 simulated networks from your fitted model.  If you do not specify a term the default formula for undirected
-           networks is ', code('~ degree + espartners + distance + model'), 'and for
-           directed networks is ', code('~ idegree + odegree + espartners +
-                                        distance + model'), '.  ',
+           networks is ', code('~ model + degree + espartners + distance'), 'and for
+           directed networks is ', code('~ model + idegree + odegree + espartners +
+                                        distance'), '.  ',
            'The "model" plot shows how well the fitted model reproduces the observed values for the 
            terms in the model (the sufficient statistics), and can be used to assess convergence.'),
          fluidRow(
@@ -1182,9 +1183,8 @@ tabPanel(title='Simulations', value='tab7',
                   tabPanel("Control Options",
                            fluidRow(
                              column(3, class = "shiftright",
-                                    inlineSelectInput('simcontroltype',label=NULL,
-                                                      choices=c("MCMC"),
-                                                      style="margin:10px 0px;")),
+                                    selectInput('simcontroltype',label=NULL,
+                                                      choices=c("MCMC"))),
                              column(7,
                                     checkboxInput('simcontroldefault','Use default options', value=TRUE))
                            ),
@@ -1335,17 +1335,17 @@ tabPanel(title='Help', value='tab8',
                          div(title=paste("Homepage of the statnet project with tutorials,",
                                          "publications and recent news."),
                              a("About statnet",
-                               href = "http://statnet.org/", target = "_blank")
+                               href = "https://statnet.org/", target = "_blank")
                          ),
 
                          column(11, offset = 1,
                                 span(id="linktitle1",'Key background papers',icon('angle-double-left')),br(),
                                 div(id="linkbox1",
                                     a("ergm: Journal of Statistical Software",
-                                      href = "http://www.jstatsoft.org/v24/i03/", target = "_blank"),
+                                      href = "https://www.jstatsoft.org/v24/i03/", target = "_blank"),
                                     br(),
                                     a("Using ergm: Journal of Statistical Software",
-                                      href = "http://www.jstatsoft.org/v24/i04/", target = "_blank")),
+                                      href = "https://www.jstatsoft.org/v24/i04/", target = "_blank")),
 
                                 span(id="linktitle2",'Tutorials and documentation',icon('angle-double-left')),br(),
                                 div(id="linkbox2",
@@ -1354,13 +1354,13 @@ tabPanel(title='Help', value='tab8',
                                       target= "_blank"),
                                     br(),
                                     a("ergm documentation on CRAN",
-                                      href = "http://cran.r-project.org/web/packages/ergm/ergm.pdf",
+                                      href = "https://cran.r-project.org/web/packages/ergm/ergm.pdf",
                                       target = "_blank")),
                                 style="margin-bottom:10px;"),
                          br(),
                          div(a("statnetWeb on GitHub", href="https://github.com/statnet/statnetWeb",
                                target="_blank")),
-                         div(a("Shiny: a web application framework for R", href="http://shiny.rstudio.com/",
+                         div(a("Shiny: a web application framework for R", href="https://shiny.posit.co/",
                                target="_blank"))
                        ),
                        mainPanel(
