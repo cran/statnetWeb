@@ -907,7 +907,7 @@ allmodelsimreac <- reactive({
 })
 
 # Currently, the reactive statements that control the sizing/coloring/legend in
-# thesimulation plots use the attributes from the original network as a point
+# the simulation plots use the attributes from the original network as a point
 # of reference. If the method for simulating networks changes from applying the
 # same distribution of attributes, these `get.vertex.attribute` commands for
 # `minsize` and `maxsize` would also need to change.
@@ -1296,7 +1296,7 @@ output$attr2 <- renderPrint({
 output$dynamiccolor <- renderUI({
   selectInput('colorby',
               label = 'Color nodes according to:',
-              c('None' = 2, attrib()))
+              c('None' = 2, menuattr()))
 })
 outputOptions(output,'dynamiccolor', suspendWhenHidden=FALSE, priority=10)
 
@@ -2455,6 +2455,7 @@ output$cugtestdownload <- downloadHandler(
 
 #since the visibility toggles between two states, set the options to
 #not suspend the output when hidden
+# first line was commented out?
 output$mixmxchooser <- renderUI({
   selectInput('mixmx', label='Choose attribute',
               choices = menuattr())
@@ -2463,8 +2464,9 @@ outputOptions(output,'mixmxchooser',suspendWhenHidden=FALSE)
 
 output$mixingmatrix <- renderPrint({
   if(!is.network(nw())) {return()}
-  if(!is.null(input$mixmx)){
-  mixingmatrix(nw(), input$mixmx)}
+  if(!is.null(input$mixmx) && input$mixmx != "") {
+    mixingmatrix(nw(), input$mixmx)
+  }
 })
 outputOptions(output,'mixingmatrix',suspendWhenHidden=FALSE)
 
@@ -3170,7 +3172,8 @@ output$diagnosticsplot <- renderPlot({
     modn <- as.numeric(substr(mod,6,6))
     mod <- values$modelfits[[modn]]
   }
-  vpp <- length(mod$coef)
+#  vpp <- length(mod$coef)
+  vpp <- length(coef(mod))
   tryCatch(
     mcmc.diagnostics(mod, vars.per.page = vpp),
     error = function(e) cat("MCMC was not run or MCMC sample was not stored."))
@@ -3187,7 +3190,7 @@ output$mcmcplotdownload <- downloadHandler(
       modn <- as.numeric(substr(mod,6,6))
       mod <- values$modelfits[[modn]]
     }
-    vpp <- length(mod$coef)
+    vpp <- length(coef(mod))
     pdf(file=file, height=vpp*4/3, width=10)
     tryCatch(
       mcmc.diagnostics(model1reac(), vars.per.page = vpp),
@@ -3207,7 +3210,7 @@ output$diagnosticsplotspace <- renderUI({
     modn <- as.numeric(substr(mod,6,6))
     mod <- values$modelfits[[modn]]
   }
-  vpp <- length(mod$coef)
+  vpp <- length(coef(mod))
   plotOutput('diagnosticsplot', height = vpp*400/2)
 })
 

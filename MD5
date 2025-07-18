@@ -1,12 +1,11 @@
-64814bbdb3b594921d8c0e30cb578c6d *DESCRIPTION
-ef5d1d7c46dfa1918c974ee64129a989 *NAMESPACE
-b9742daf6a4c0c3fa3df2637ec5e41fa *NEWS.md
+2d5a478565fbeb3681428f0db0f04cc3 *DESCRIPTION
+56328292a161cc90f7944434f853281a *NAMESPACE
+05815491b2939666e46138adba2813ee *NEWS.md
 3cd2965fc25334ef2eecd589ac5e7c6f *R/run_sw.R
-57a1b9a1fd866682fb2b2a374fffc409 *R/statnetWeb-package.R
-580bbef9c58dd212631ff6a23caceebb *README.md
-7d4acca3267a08fec374b9a3d17b378a *inst/shiny/statnetWeb/global.R
-68f397fc95453c74bf922dfaac68f34f *inst/shiny/statnetWeb/rsconnect/shinyapps.io/statnet/statnetWeb.dcf
-8f6d6d659d680c205913771594d7beae *inst/shiny/statnetWeb/server.R
+66a9c5e0ed8c36f9accb8c48d3649fcf *R/statnetWeb-package.R
+4506573e2d09cb0067de88ea8fbde3b0 *README.md
+b85e189450f7e204e07ccbe48fcda95f *inst/shiny/statnetWeb/global.R
+bb2a153ec4d917162c09d48ee2fa8f0b *inst/shiny/statnetWeb/server.R
 3e4175b0a9847d2ac4aea4959af4db10 *inst/shiny/statnetWeb/ui.R
 6834d042f2c5c16693f8581100551ac0 *inst/shiny/statnetWeb/www/200px-Icon-round-Question_mark.svg.png
 d3a1e94edd4f319cecc46c20538636d8 *inst/shiny/statnetWeb/www/UW.Wordmark_ctr_K.jpg
@@ -19,4 +18,4 @@ cb4ad88dbb5cd215c45defecc522c65e *inst/shiny/statnetWeb/www/callout2.png
 951c634f9bc82b115763bbed08c3df26 *inst/shiny/statnetWeb/www/mycosmo.css
 d270774ed4d00da280174112050b3112 *inst/shiny/statnetWeb/www/style.css
 977a91b24cc0c47fce2a0525c604ff64 *man/run_sw.Rd
-128be4ba49f8bcf2a352203fc11595e8 *man/statnetWeb.Rd
+e13fd90e74073d54b8e8fb210bc88d4c *man/statnetWeb.Rd
